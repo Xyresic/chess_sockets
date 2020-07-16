@@ -1,12 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Minimalist Chess | Home{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" type="text/css" href="../static/css/index.css">
+{% endblock %}
 
 {% block content %}
-    {% if current_user.is_authenticated %}
-        <a class="button" href={{ url_for('auth.logout') }}>Log Out</a>
-    {% else %}
-        <a class="button" href={{ url_for('auth.register') }}>Sign Up</a>
-        <a class="button" href={{ url_for('auth.login') }}>Log In</a>
-    {% endif %}
+    <div class="container mx-auto" id="main">
+        <div class="d-flex justify-content-center" id="heading">
+            <h1 class="display-1">Minimalist Chess</h1>
+        </div>
+        <div class="d-flex justify-content-center">
+            <form>
+                <input type="text" placeholder="Enter a name" class="form-control" id="name" required>
+                <div clas="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-outline-primary">Create Room</button>
+                    <button type="submit" class="btn btn-outline-success">Join Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="../static/js/index.js"></script>
 {% endblock %}
