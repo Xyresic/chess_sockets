@@ -1,12 +1,16 @@
 #main {
-    height: 100vh;
+    height: 80vh;
 }
 
 #heading {
-    margin-top: 25vh;
+    margin-top: 20vh;
 }
 
 #name {
     margin-top: 5vh;
+    margin-bottom: 3vh;
+}
+
+#room {
     margin-bottom: 3vh;
 }
