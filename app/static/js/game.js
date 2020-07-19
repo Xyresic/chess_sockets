@@ -33,13 +33,27 @@ for (let x = 0; x < 8; x++) {
     }
 }
 
-let createCircle = (node, cx, cy) => {
+let createCircle = (cx, cy) => {
     let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circle.setAttribute('cx', cx);
     circle.setAttribute('cy', cy);
     circle.setAttribute('r', 20);
-    circle.setAttribute('fill', '#d3d3d3');
-    board.insertBefore(circle, node); //TODO fix this
+    circle.setAttribute('fill', '#c0c0c0');
+    board.appendChild(circle);
+}
+
+let validSquare = (piece, x, y) => {
+    let pieceType = Math.floor((piece.type.charCodeAt() - 65) / 26)
+    let squareType = Math.floor((state[0][y].charCodeAt(x) - 65) / 26)
+    return pieceType !== squareType;
+}
+
+let boundsCheck = (piece, offsetX, offsetY) => {
+    let posX = piece.ogX + offsetX;
+    let posY = piece.ogY + offsetY;
+    if (posX <= 700 && posX >=0 && posY <= 700 && posY >=0 && validSquare(piece, posX / 100, posY / 100)) {
+        createCircle(posX + 50, posY + 50);
+    }
 }
 
 let selectPiece = (piece) => {
@@ -50,31 +64,43 @@ let selectPiece = (piece) => {
     switch (piece.type) {
         case 'P':
             if (flip) {
-                createCircle(piece, ogX + 50, ogY + 150);
-                if (ogY == 100) {
-                    createCircle(piece, ogX + 50, ogY + 250);
+                createCircle(ogX + 50, ogY + 150);
+                if (ogY === 100) {
+                    createCircle(ogX + 50, ogY + 250);
                 }
             } else {
-                createCircle(piece, ogX + 50, ogY - 50);
-                if (ogY == 600) {
-                    createCircle(piece, ogX + 50, ogY - 150);
+                createCircle(ogX + 50, ogY - 50);
+                if (ogY === 600) {
+                    createCircle(ogX + 50, ogY - 150);
                 }
             }
             break;
         case 'p':
             if (flip) {
                 createCircle(piece, ogX + 50, ogY - 50);
-                if (ogY == 600) {
+                if (ogY === 600) {
                     createCircle(piece, ogX + 50, ogY - 150);
                 }
             } else {
                 createCircle(piece, ogX + 50, ogY + 150);
-                if (ogY == 100) {
+                if (ogY === 100) {
                     createCircle(piece, ogX + 50, ogY + 250);
                 }
             }
             break;
+        case 'N':
+        case 'n':
+            boundsCheck(piece, -200, -100);
+            boundsCheck(piece, -200, 100);
+            boundsCheck(piece, -100, -200);
+            boundsCheck(piece, -100, 200);
+            boundsCheck(piece, 100, -200);
+            boundsCheck(piece, 100, 200);
+            boundsCheck(piece, 200, -100);
+            boundsCheck(piece, 200, 100);
+            break;
     }
+    board.appendChild(piece);
 }
 
 let deselectPiece = () => {
