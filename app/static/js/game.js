@@ -42,13 +42,13 @@ let createCircle = (cx, cy) => {
     board.appendChild(circle);
 }
 
-let validSquare = (piece, x, y) => {
-    let pieceType = Math.floor((piece.type.charCodeAt() - 65) / 26)
-    let squareType = Math.floor((state[0][y].charCodeAt(x) - 65) / 26)
-    return pieceType !== squareType;
+let validSquare = (piece, x, y, captureOptional=true) => {
+    let pieceType = Math.floor((piece.type.charCodeAt() - 65) / 26);
+    let squareType = Math.floor((state[0][y].charCodeAt(x) - 65) / 26);
+    return pieceType !== squareType && (captureOptional || squareType > -1);
 }
 
-let boundsCheck = (piece, offsetX, offsetY) => {
+let knightCheck = (piece, offsetX, offsetY) => {
     let posX = piece.ogX + offsetX;
     let posY = piece.ogY + offsetY;
     if (posX <= 700 && posX >=0 && posY <= 700 && posY >=0 && validSquare(piece, posX / 100, posY / 100)) {
@@ -63,48 +63,76 @@ let selectPiece = (piece) => {
     let ogY = piece.ogY;
     switch (piece.type) {
         case 'P':
-            if (flip) {
-                createCircle(ogX + 50, ogY + 150);
-                if (ogY === 100) {
-                    createCircle(ogX + 50, ogY + 250);
-                }
-            } else {
-                createCircle(ogX + 50, ogY - 50);
-                if (ogY === 600) {
-                    createCircle(ogX + 50, ogY - 150);
-                }
-            }
-            break;
         case 'p':
-            if (flip) {
-                createCircle(piece, ogX + 50, ogY - 50);
-                if (ogY === 600) {
-                    createCircle(piece, ogX + 50, ogY - 150);
+            //TODO en passant
+            if (piece.type === 'P' && flip || piece.type === 'p' && !flip) {
+                if (validSquare(piece, ogX / 100, ogY / 100 + 1) && state[0][ogY / 100 + 1][ogX / 100] === '.') {
+                    createCircle(ogX + 50, ogY + 150);
+                    if (ogY === 100 && validSquare(piece, ogX / 100, ogY / 100 + 2)) {
+                        createCircle(ogX + 50, ogY + 250);
+                    }
+                }
+                if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 + 1, false)) {
+                    createCircle(ogX - 50, ogY + 150);
+                }
+                if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 + 1, false)) {
+                    createCircle(ogX + 150, ogY + 150);
                 }
             } else {
-                createCircle(piece, ogX + 50, ogY + 150);
-                if (ogY === 100) {
-                    createCircle(piece, ogX + 50, ogY + 250);
+                if (validSquare(piece, ogX / 100, ogY / 100 - 1) && state[0][ogY / 100 - 1][ogX / 100] === '.') {
+                    createCircle(ogX + 50, ogY - 50);
+                    if (ogY === 600 && validSquare(piece, ogX / 100, ogY / 100 - 2)) {
+                        createCircle(ogX + 50, ogY - 150);
+                    }
+                }
+                if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 - 1, false)) {
+                    createCircle(ogX - 50, ogY - 50);
+                }
+                if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 - 1, false)) {
+                    createCircle(ogX + 150, ogY - 50);
                 }
             }
             break;
         case 'N':
         case 'n':
-            boundsCheck(piece, -200, -100);
-            boundsCheck(piece, -200, 100);
-            boundsCheck(piece, -100, -200);
-            boundsCheck(piece, -100, 200);
-            boundsCheck(piece, 100, -200);
-            boundsCheck(piece, 100, 200);
-            boundsCheck(piece, 200, -100);
-            boundsCheck(piece, 200, 100);
+            knightCheck(piece, -200, -100);
+            knightCheck(piece, -200, 100);
+            knightCheck(piece, -100, -200);
+            knightCheck(piece, -100, 200);
+            knightCheck(piece, 100, -200);
+            knightCheck(piece, 100, 200);
+            knightCheck(piece, 200, -100);
+            knightCheck(piece, 200, 100);
             break;
     }
     board.appendChild(piece);
 }
 
-let deselectPiece = () => {
+let deselectPiece = (piece) => {
     selectedPiece = null;
+    let placed = false;
+    let pieceX = parseFloat(piece.getAttribute('x')) + 50;
+    let pieceY = parseFloat(piece.getAttribute('y')) + 50;
+    let nearbySpaces = $('circle');
+    for (let circle of nearbySpaces) {
+        let circX = circle.getAttribute('cx');
+        let circY = circle.getAttribute('cy');
+        console.log(circX + ' ' + circY);
+        console.log(pieceX + ' ' + pieceY);
+        if (Math.abs(pieceX - circX) <= 50 && Math.abs(pieceY - circY) <= 50) {
+            piece.setAttribute('x', circX - 50);
+            piece.setAttribute('y', circY - 50);
+            piece.ogX = circX - 50;
+            piece.ogY = circY - 50;
+            placed = true;
+            break;
+        }
+    }
+    if (!placed) {
+        piece.setAttribute('x', piece.ogX);
+        piece.setAttribute('y', piece.ogY);
+    }
+    $('svg circle').remove();
 }
 
 let setPiece = (x, y, type, link) => {
@@ -125,7 +153,7 @@ let setPiece = (x, y, type, link) => {
     newPiece.type = type;
     newPiece.setAttribute('href', link);
     newPiece.addEventListener('mousedown', () => {selectPiece(newPiece)});
-    newPiece.addEventListener('mouseup', deselectPiece);
+    newPiece.addEventListener('mouseup', () => {deselectPiece(newPiece)});
     board.appendChild(newPiece);
 }
 
