@@ -59,9 +59,9 @@ def game(room):
     query = Room.query.filter_by(name=room).first()
     user2 = query.user2 if query.user2 is not None else 'Waiting for opponent ...'
     if current_user == user2:
-        return render_template('game.html', user1=user2, user2=query.user1, state=query.state, flip=1)
+        return render_template('game.html', room=query.name, user1=user2, user2=query.user1, state=query.state, flip=1)
     else:
-        return render_template('game.html', user1=query.user1, user2=user2, state=query.state, flip=0)
+        return render_template('game.html', room=query.name, user1=query.user1, user2=user2, state=query.state, flip=0)
 
 if __name__ == "__main__":
     app.debug = True

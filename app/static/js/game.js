@@ -42,17 +42,151 @@ let createCircle = (cx, cy) => {
     board.appendChild(circle);
 }
 
-let validSquare = (piece, x, y, captureOptional=true) => {
+let validSquare = (piece, x, y, captureOptional = true) => {
     let pieceType = Math.floor((piece.type.charCodeAt() - 65) / 26);
     let squareType = Math.floor((state[0][y].charCodeAt(x) - 65) / 26);
     return pieceType !== squareType && (captureOptional || squareType > -1);
 }
 
+let pawnCheck = (piece) => {
+    let ogX = piece.ogX;
+    let ogY = piece.ogY;
+    if (piece.type === 'P' && flip || piece.type === 'p' && !flip) {
+        if (validSquare(piece, ogX / 100, ogY / 100 + 1) && state[0][ogY / 100 + 1][ogX / 100] === '.') {
+            createCircle(ogX + 50, ogY + 150);
+            if (ogY === 100 && validSquare(piece, ogX / 100, ogY / 100 + 2)) {
+                createCircle(ogX + 50, ogY + 250);
+            }
+        }
+        if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 + 1, false)) {
+            createCircle(ogX - 50, ogY + 150);
+        }
+        if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 + 1, false)) {
+            createCircle(ogX + 150, ogY + 150);
+        }
+    } else {
+        if (validSquare(piece, ogX / 100, ogY / 100 - 1) && state[0][ogY / 100 - 1][ogX / 100] === '.') {
+            createCircle(ogX + 50, ogY - 50);
+            if (ogY === 600 && validSquare(piece, ogX / 100, ogY / 100 - 2)) {
+                createCircle(ogX + 50, ogY - 150);
+            }
+        }
+        if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 - 1, false)) {
+            createCircle(ogX - 50, ogY - 50);
+        }
+        if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 - 1, false)) {
+            createCircle(ogX + 150, ogY - 50);
+        }
+    }
+}
+
 let knightCheck = (piece, offsetX, offsetY) => {
     let posX = piece.ogX + offsetX;
     let posY = piece.ogY + offsetY;
-    if (posX <= 700 && posX >=0 && posY <= 700 && posY >=0 && validSquare(piece, posX / 100, posY / 100)) {
+    if (posX <= 700 && posX >= 0 && posY <= 700 && posY >= 0 && validSquare(piece, posX / 100, posY / 100)) {
         createCircle(posX + 50, posY + 50);
+    }
+}
+
+let crossCheck = (piece, king = false) => {
+    let ogX = piece.ogX;
+    let ogY = piece.ogY;
+    for (let x = ogX / 100 + 1; x < 8; x++) {
+        if (king && x > ogX / 100 + 1) {
+            break;
+        }
+        if (validSquare(piece, x, ogY / 100)) {
+            createCircle(x * 100 + 50, ogY + 50);
+        }
+        if (state[0][ogY / 100][x] !== '.') {
+            break;
+        }
+    }
+    for (let x = ogX / 100 - 1; x > -1; x--) {
+        if (king && x < ogX / 100 - 1) {
+            break;
+        }
+        if (validSquare(piece, x, ogY / 100)) {
+            createCircle(x * 100 + 50, ogY + 50);
+        }
+        if (state[0][ogY / 100][x] !== '.') {
+            break;
+        }
+    }
+    for (let y = ogY / 100 + 1; y < 8; y++) {
+        if (king && y > ogY / 100 + 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100, y)) {
+            createCircle(ogX + 50, y * 100 + 50);
+        }
+        if (state[0][y][ogX / 100] !== '.') {
+            break;
+        }
+    }
+    for (let y = ogY / 100 - 1; y > -1; y--) {
+        if (king && y < ogY / 100 - 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100, y)) {
+            createCircle(ogX + 50, y * 100 + 50);
+        }
+        if (state[0][y][ogX / 100] !== '.') {
+            break;
+        }
+    }
+}
+
+let diagCheck = (piece, king = false) => {
+    let ogX = piece.ogX;
+    let ogY = piece.ogY;
+    let possibleLeft = piece.ogX / 100;
+    let possibleRight = 7 - possibleLeft;
+    let possibleAbove = piece.ogY / 100;
+    let possibleBelow = 7 - possibleAbove;
+    for (let i = 1; i < Math.min(possibleAbove, possibleLeft) + 1; i++) {
+        if (king && i > 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100 - i, ogY / 100 - i)) {
+            createCircle(ogX - 50 - 100 * (i - 1), ogY - 50 - 100 * (i - 1));
+        }
+        if (state[0][ogY / 100 - i][ogX / 100 - i] !== '.') {
+            break;
+        }
+    }
+    for (let i = 1; i < Math.min(possibleAbove, possibleRight) + 1; i++) {
+        if (king && i > 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100 + i, ogY / 100 - i)) {
+            createCircle(ogX + 50 + 100 * i, ogY - 50 - 100 * (i - 1));
+        }
+        if (state[0][ogY / 100 - i][ogX / 100 + i] !== '.') {
+            break;
+        }
+    }
+    for (let i = 1; i < Math.min(possibleBelow, possibleLeft) + 1; i++) {
+        if (king && i > 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100 - i, ogY / 100 + i)) {
+            createCircle(ogX - 50 - 100 * (i - 1), ogY + 50 + 100 * i);
+        }
+        if (state[0][ogY / 100 + i][ogX / 100 - i] !== '.') {
+            break;
+        }
+    }
+    for (let i = 1; i < Math.min(possibleBelow, possibleRight) + 1; i++) {
+        if (king && i > 1) {
+            break;
+        }
+        if (validSquare(piece, ogX / 100 + i, ogY / 100 + i)) {
+            createCircle(ogX + 50 + 100 * i, ogY + 50 + 100 * i);
+        }
+        if (state[0][ogY / 100 + i][ogX / 100 + i] !== '.') {
+            break;
+        }
     }
 }
 
@@ -65,33 +199,7 @@ let selectPiece = (piece) => {
         case 'P':
         case 'p':
             //TODO en passant
-            if (piece.type === 'P' && flip || piece.type === 'p' && !flip) {
-                if (validSquare(piece, ogX / 100, ogY / 100 + 1) && state[0][ogY / 100 + 1][ogX / 100] === '.') {
-                    createCircle(ogX + 50, ogY + 150);
-                    if (ogY === 100 && validSquare(piece, ogX / 100, ogY / 100 + 2)) {
-                        createCircle(ogX + 50, ogY + 250);
-                    }
-                }
-                if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 + 1, false)) {
-                    createCircle(ogX - 50, ogY + 150);
-                }
-                if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 + 1, false)) {
-                    createCircle(ogX + 150, ogY + 150);
-                }
-            } else {
-                if (validSquare(piece, ogX / 100, ogY / 100 - 1) && state[0][ogY / 100 - 1][ogX / 100] === '.') {
-                    createCircle(ogX + 50, ogY - 50);
-                    if (ogY === 600 && validSquare(piece, ogX / 100, ogY / 100 - 2)) {
-                        createCircle(ogX + 50, ogY - 150);
-                    }
-                }
-                if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 - 1, false)) {
-                    createCircle(ogX - 50, ogY - 50);
-                }
-                if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 - 1, false)) {
-                    createCircle(ogX + 150, ogY - 50);
-                }
-            }
+            pawnCheck(piece);
             break;
         case 'N':
         case 'n':
@@ -103,6 +211,24 @@ let selectPiece = (piece) => {
             knightCheck(piece, 100, 200);
             knightCheck(piece, 200, -100);
             knightCheck(piece, 200, 100);
+            break;
+        case 'B':
+        case 'b':
+            diagCheck(piece);
+            break;
+        case 'R':
+        case 'r':
+            crossCheck(piece);
+            break;
+        case 'Q':
+        case 'q':
+            crossCheck(piece);
+            diagCheck(piece);
+            break;
+        case 'K':
+        case 'k':
+            crossCheck(piece, true);
+            diagCheck(piece, true);
             break;
     }
     board.appendChild(piece);
@@ -117,8 +243,6 @@ let deselectPiece = (piece) => {
     for (let circle of nearbySpaces) {
         let circX = circle.getAttribute('cx');
         let circY = circle.getAttribute('cy');
-        console.log(circX + ' ' + circY);
-        console.log(pieceX + ' ' + pieceY);
         if (Math.abs(pieceX - circX) <= 50 && Math.abs(pieceY - circY) <= 50) {
             piece.setAttribute('x', circX - 50);
             piece.setAttribute('y', circY - 50);
@@ -137,12 +261,14 @@ let deselectPiece = (piece) => {
 
 let setPiece = (x, y, type, link) => {
     let newPiece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    let posX;
+    let posY;
     if (flip) {
-        var posX = 700 - x;
-        var posY = 700 - y;
+        posX = 700 - x;
+        posY = 700 - y;
     } else {
-        var posX = x;
-        var posY = y;
+        posX = x;
+        posY = y;
     }
     newPiece.setAttribute('x', posX);
     newPiece.setAttribute('y', posY);
@@ -152,8 +278,12 @@ let setPiece = (x, y, type, link) => {
     newPiece.setAttribute('height', 100);
     newPiece.type = type;
     newPiece.setAttribute('href', link);
-    newPiece.addEventListener('mousedown', () => {selectPiece(newPiece)});
-    newPiece.addEventListener('mouseup', () => {deselectPiece(newPiece)});
+    newPiece.addEventListener('mousedown', () => {
+        selectPiece(newPiece)
+    });
+    newPiece.addEventListener('mouseup', () => {
+        deselectPiece(newPiece)
+    });
     board.appendChild(newPiece);
 }
 
@@ -210,4 +340,6 @@ let dragPiece = (event) => {
     }
 }
 
-board.addEventListener('mousemove', e => {dragPiece(e)});
+board.addEventListener('mousemove', e => {
+    dragPiece(e)
+});
