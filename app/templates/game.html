@@ -19,6 +19,9 @@
 {% endblock %}
 
 {% block scripts %}
-    <script>let flip = {{ flip }}</script>
+    <script>
+        let state = '{{ state }}';
+        let flip = {{ flip }};
+    </script>
     <script src="../static/js/game.js"></script>
 {% endblock %}

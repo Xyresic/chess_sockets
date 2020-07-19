@@ -13,4 +13,4 @@ class Room(db.Model):
     def __init__(self, user, name):
         self.user1 = user
         self.name = name
-        self.state = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
+        self.state = 'rnbqkbnr/pppppppp/......../......../......../......../PPPPPPPP/RNBQKBNR w KQkq -'
