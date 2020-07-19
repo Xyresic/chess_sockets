@@ -1,4 +1,6 @@
 let board = document.getElementById('board');
+let pt = board.createSVGPoint();
+let selected_piece;
 
 for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
@@ -16,6 +18,14 @@ for (let x = 0; x < 8; x++) {
     }
 }
 
+let select_piece = (piece) => {
+    selected_piece = piece;
+}
+
+let deselect_piece = () => {
+    selected_piece = null;
+}
+
 let set_piece = (x, y, link) => {
     let new_piece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     new_piece.setAttribute('x', x);
@@ -23,6 +33,8 @@ let set_piece = (x, y, link) => {
     new_piece.setAttribute('width', 100);
     new_piece.setAttribute('height', 100);
     new_piece.setAttribute('href', link);
+    new_piece.addEventListener('mousedown', () => {select_piece(new_piece)});
+    new_piece.addEventListener('mouseup', deselect_piece);
     board.appendChild(new_piece);
 }
 
@@ -71,3 +83,15 @@ set_piece(500, black_back_rank, black_knight);
 for (let x = 0; x < 8; x++) {
     set_piece(x * 100, Math.abs(black_back_rank - 100), black_pawn);
 }
+
+let drag_piece = (event) => {
+    if (selected_piece != null) {
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        let cursor = pt.matrixTransform(board.getScreenCTM().inverse());
+        selected_piece.setAttribute('x', cursor.x - 50);
+        selected_piece.setAttribute('y', cursor.y - 50);
+    }
+}
+
+board.addEventListener('mousemove', e => {drag_piece(e)});
