@@ -52,29 +52,29 @@ let pawnCheck = (piece) => {
     let ogX = piece.ogX;
     let ogY = piece.ogY;
     if (piece.type === 'P' && flip || piece.type === 'p' && !flip) {
-        if (validSquare(piece, ogX / 100, ogY / 100 + 1) && state[0][ogY / 100 + 1][ogX / 100] === '.') {
+        if (validSquare(piece, ogX/100, ogY/100 + 1) && state[0][ogY/100 + 1][ogX/100] === '.') {
             createCircle(ogX + 50, ogY + 150);
-            if (ogY === 100 && validSquare(piece, ogX / 100, ogY / 100 + 2)) {
+            if (ogY === 100 && validSquare(piece, ogX/100, ogY/100 + 2) && state[0][ogY/100 + 2][ogX/100] === '.') {
                 createCircle(ogX + 50, ogY + 250);
             }
         }
-        if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 + 1, false)) {
+        if (ogX > 0 && validSquare(piece, ogX/100 - 1, ogY/100 + 1, false)) {
             createCircle(ogX - 50, ogY + 150);
         }
-        if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 + 1, false)) {
+        if (ogX < 700 && validSquare(piece, ogX/100 + 1, ogY/100 + 1, false)) {
             createCircle(ogX + 150, ogY + 150);
         }
     } else {
-        if (validSquare(piece, ogX / 100, ogY / 100 - 1) && state[0][ogY / 100 - 1][ogX / 100] === '.') {
+        if (validSquare(piece, ogX/100, ogY/100 - 1) && state[0][ogY/100 - 1][ogX/100] === '.') {
             createCircle(ogX + 50, ogY - 50);
-            if (ogY === 600 && validSquare(piece, ogX / 100, ogY / 100 - 2)) {
+            if (ogY === 600 && validSquare(piece, ogX/100, ogY/100 - 2) && state[0][ogY/100 - 2][ogX/100] === '.') {
                 createCircle(ogX + 50, ogY - 150);
             }
         }
-        if (ogX > 0 && validSquare(piece, ogX / 100 - 1, ogY / 100 - 1, false)) {
+        if (ogX > 0 && validSquare(piece, ogX/100 - 1, ogY/100 - 1, false)) {
             createCircle(ogX - 50, ogY - 50);
         }
-        if (ogX < 700 && validSquare(piece, ogX / 100 + 1, ogY / 100 - 1, false)) {
+        if (ogX < 700 && validSquare(piece, ogX/100 + 1, ogY/100 - 1, false)) {
             createCircle(ogX + 150, ogY - 50);
         }
     }
