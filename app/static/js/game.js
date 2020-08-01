@@ -23,168 +23,64 @@ for (let x = 0; x < 8; x++) {
         circle.setAttribute('cx', x * 100 + 50);
         circle.setAttribute('cy', y * 100 + 50);
         circle.setAttribute('r', 20);
+        circle.setAttribute('id', '' + x + y);
         circle.setAttribute('fill', '#c0c0c0');
+        circle.setAttribute('visibility', 'hidden');
         board.appendChild(circle);
     }
 }
 
-let createCircle = (cx, cy) => {
-    let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', cx);
-    circle.setAttribute('cy', cy);
-    circle.setAttribute('r', 20);
-    circle.setAttribute('fill', '#c0c0c0');
-    board.appendChild(circle);
+let generateOppMoves = () => {
+
 }
 
-let validSquare = (piece, x, y, captureOptional = true) => {
-    //TODO check if own king would be in check
-    let pieceType = Math.floor((piece.type.charCodeAt() - 65) / 26);
-    let squareType = Math.floor((state[0][y].charCodeAt(x) - 65) / 26);
-    return pieceType !== squareType && (captureOptional || squareType > -1);
+let check = (piece, move, opponent=false) => {
+    return false;
 }
 
-let pawnCheck = (piece) => {
-    let ogX = piece.ogX;
-    let ogY = piece.ogY;
-    if (piece.type === 'P' && flip || piece.type === 'p' && !flip) {
-        if (validSquare(piece, ogX/100, ogY/100 + 1) && state[0][ogY/100 + 1][ogX/100] === '.') {
-            createCircle(ogX + 50, ogY + 150);
-            if (ogY === 100 && validSquare(piece, ogX/100, ogY/100 + 2) && state[0][ogY/100 + 2][ogX/100] === '.') {
-                createCircle(ogX + 50, ogY + 250);
+let generateYourMoves = () => {
+    let moveFound = false;
+    for (let piece of boardState.filter(piece => {
+        return piece && !(state[0] === 'w' ^ piece.isWhite());
+    })) {
+        for (let group of piece.moves) {
+            for (let move of group) {
+                if (piece.inBounds(move)) {
+                    let moveX = piece.x + move[0];
+                    let moveY = piece.y + move[1];
+                    let target = boardState[moveY * 8 + moveX];
+                    let circle = $(`circle[id=${moveX}${moveY}]`)[0];
+                    if (target && piece.isWhite() === target.isWhite()) {
+                        break;
+                    } else if (piece instanceof WPawn || piece instanceof BPawn) {
+                        //TODO en passant
+                        if (move[0]) {
+                            if (target && piece.isWhite() !== target.isWhite() && !check(piece, move)) {
+                                moveFound = true;
+                                piece.addMove(circle);
+                            }
+                        } else if (target) {
+                            break;
+                        } else if (Math.abs(move[1]) === 1 || piece.doubleMove && !check(piece, move)) {
+                            moveFound = true;
+                            piece.addMove(circle);
+                        }
+                    } else if(!check(piece, move)) {
+                        moveFound = true;
+                        piece.addMove(circle);
+                        if (target) {
+                            break;
+                        }
+                    }
+                }
             }
         }
-        if (ogX > 0 && validSquare(piece, ogX/100 - 1, ogY/100 + 1, false)) {
-            createCircle(ogX - 50, ogY + 150);
-        }
-        if (ogX < 700 && validSquare(piece, ogX/100 + 1, ogY/100 + 1, false)) {
-            createCircle(ogX + 150, ogY + 150);
-        }
-    } else {
-        if (validSquare(piece, ogX/100, ogY/100 - 1) && state[0][ogY/100 - 1][ogX/100] === '.') {
-            createCircle(ogX + 50, ogY - 50);
-            if (ogY === 600 && validSquare(piece, ogX/100, ogY/100 - 2) && state[0][ogY/100 - 2][ogX/100] === '.') {
-                createCircle(ogX + 50, ogY - 150);
-            }
-        }
-        if (ogX > 0 && validSquare(piece, ogX/100 - 1, ogY/100 - 1, false)) {
-            createCircle(ogX - 50, ogY - 50);
-        }
-        if (ogX < 700 && validSquare(piece, ogX/100 + 1, ogY/100 - 1, false)) {
-            createCircle(ogX + 150, ogY - 50);
-        }
+    }
+    if (!moveFound) {
+        //TODO checkmate
     }
 }
 
-let knightCheck = (piece, offsetX, offsetY) => {
-    let posX = piece.ogX + offsetX;
-    let posY = piece.ogY + offsetY;
-    if (posX <= 700 && posX >= 0 && posY <= 700 && posY >= 0 && validSquare(piece, posX / 100, posY / 100)) {
-        createCircle(posX + 50, posY + 50);
-    }
-}
-
-let crossCheck = (piece, king = false) => {
-    let ogX = piece.ogX;
-    let ogY = piece.ogY;
-    for (let x = ogX/100 + 1; x < 8; x++) {
-        if (king && x > ogX/100 + 1) {
-            break;
-        }
-        if (validSquare(piece, x, ogY/100)) {
-            createCircle(x * 100 + 50, ogY + 50);
-        }
-        if (state[0][ogY/100][x] !== '.') {
-            break;
-        }
-    }
-    for (let x = ogX/100 - 1; x > -1; x--) {
-        if (king && x < ogX/100 - 1) {
-            break;
-        }
-        if (validSquare(piece, x, ogY/100)) {
-            createCircle(x * 100 + 50, ogY + 50);
-        }
-        if (state[0][ogY/100][x] !== '.') {
-            break;
-        }
-    }
-    for (let y = ogY/100 + 1; y < 8; y++) {
-        if (king && y > ogY/100 + 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100, y)) {
-            createCircle(ogX + 50, y * 100 + 50);
-        }
-        if (state[0][y][ogX/100] !== '.') {
-            break;
-        }
-    }
-    for (let y = ogY/100 - 1; y > -1; y--) {
-        if (king && y < ogY/100 - 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100, y)) {
-            createCircle(ogX + 50, y * 100 + 50);
-        }
-        if (state[0][y][ogX/100] !== '.') {
-            break;
-        }
-    }
-}
-
-let diagCheck = (piece, king = false) => {
-    let ogX = piece.ogX;
-    let ogY = piece.ogY;
-    let possibleLeft = piece.ogX / 100;
-    let possibleRight = 7 - possibleLeft;
-    let possibleAbove = piece.ogY / 100;
-    let possibleBelow = 7 - possibleAbove;
-    for (let i = 1; i < Math.min(possibleAbove, possibleLeft) + 1; i++) {
-        if (king && i > 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100 - i, ogY/100 - i)) {
-            createCircle(ogX - 50 - 100 * (i - 1), ogY - 50 - 100 * (i - 1));
-        }
-        if (state[0][ogY/100 - i][ogX/100 - i] !== '.') {
-            break;
-        }
-    }
-    for (let i = 1; i < Math.min(possibleAbove, possibleRight) + 1; i++) {
-        if (king && i > 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100 + i, ogY/100 - i)) {
-            createCircle(ogX + 50 + 100 * i, ogY - 50 - 100 * (i - 1));
-        }
-        if (state[0][ogY/100 - i][ogX/100 + i] !== '.') {
-            break;
-        }
-    }
-    for (let i = 1; i < Math.min(possibleBelow, possibleLeft) + 1; i++) {
-        if (king && i > 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100 - i, ogY/100 + i)) {
-            createCircle(ogX - 50 - 100 * (i - 1), ogY + 50 + 100 * i);
-        }
-        if (state[0][ogY/100 + i][ogX/100 - i] !== '.') {
-            break;
-        }
-    }
-    for (let i = 1; i < Math.min(possibleBelow, possibleRight) + 1; i++) {
-        if (king && i > 1) {
-            break;
-        }
-        if (validSquare(piece, ogX/100 + i, ogY/100 + i)) {
-            createCircle(ogX + 50 + 100 * i, ogY + 50 + 100 * i);
-        }
-        if (state[0][ogY/100 + i][ogX/100 + i] !== '.') {
-            break;
-        }
-    }
-}
 
 let selectPiece = (piece) => {
     selectedPiece = piece;
@@ -193,28 +89,32 @@ let selectPiece = (piece) => {
 }
 
 let deselectPiece = (piece) => {
-    //TODO capturing, check for checkmate
-    selectedPiece.obj.hideMoves();
     selectedPiece = undefined;
+    piece.obj.hideMoves();
     let placed = false;
-    let pieceX = piece.obj.svgX() + 50;
-    let pieceY = piece.obj.svgY() + 50;
-    let circles = $('circle');
-    for (let circle of circles) {
-        let circX = circle.getAttribute('cx');
-        let circY = circle.getAttribute('cy');
-        if (Math.abs(pieceX - circX) <= 50 && Math.abs(pieceY - circY) <= 50) {
-            piece.setAttribute('x', circX - 50);
-            piece.setAttribute('y', circY - 50);
-            piece.obj.ogX = (circX - 50) / 100;
-            piece.obj.ogY = (circY - 50) / 100;
+    let pieceX = parseFloat(piece.getAttribute('x')) + 50;
+    let pieceY = parseFloat(piece.getAttribute('y')) + 50;
+    for (let circle of piece.obj.move_icons) {
+        let circleX = circle.getAttribute('cx');
+        let circleY = circle.getAttribute('cy');
+        if (Math.abs(pieceX - circleX) <= 50 && Math.abs(pieceY - circleY) <= 50) {
+            piece.setAttribute('x', circleX - 50);
+            piece.setAttribute('y', circleY - 50);
+            piece.obj.x = (circleX - 50) / 100;
+            piece.obj.y = (circleY - 50) / 100;
             placed = true;
             break;
         }
     }
-    if (!placed) {
-        piece.setAttribute('x', piece.obj.svg_ogX());
-        piece.setAttribute('y', piece.obj.svg_ogY());
+    if (placed) {
+        //TODO capturing
+        //TODO switch players
+        //TODO destroy moves
+        //TODO blue squares
+        //TODO check -> red square
+    } else {
+        piece.setAttribute('x', piece.obj.svgX());
+        piece.setAttribute('y', piece.obj.svgY());
     }
 }
 
@@ -280,6 +180,8 @@ for (let y = 0; y < 8; y++) {
         }
     }
 }
+state.shift();
+generateYourMoves();
 
 let dragPiece = (event) => {
     if (selectedPiece !== undefined) {
@@ -294,8 +196,8 @@ let dragPiece = (event) => {
 let returnPiece = () => {
     if (selectedPiece !== undefined) {
         selectedPiece.obj.hideMoves();
-        selectedPiece.setAttribute('x', selectedPiece.obj.svg_ogX());
-        selectedPiece.setAttribute('y', selectedPiece.obj.svg_ogY());
+        selectedPiece.setAttribute('x', selectedPiece.obj.svgX());
+        selectedPiece.setAttribute('y', selectedPiece.obj.svgY());
         selectedPiece = undefined;
     }
 }

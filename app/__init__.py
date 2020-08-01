@@ -52,7 +52,6 @@ def root():
             return redirect(url_for('game', room=room))
     return render_template('index.html')
 
-
 @app.route('/game/<room>')
 @authenticate_user
 def game(room):

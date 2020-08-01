@@ -3,7 +3,7 @@
 {% block title %}Room: {{ room }}{% endblock %}
 
 {% block style %}
-    <link rel="stylesheet" type="text/css" href="..\static\css\game.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/game.css">
 {% endblock %}
 
 {% block content %}
@@ -25,5 +25,20 @@
         let state = '{{ state }}';
         let flip = {{ flip }};
     </script>
+
+    <script src="../static/js/Pieces/Piece.js"></script>
+    <script src="../static/js/Pieces/WPawn.js"></script>
+    <script src="../static/js/Pieces/WKnight.js"></script>
+    <script src="../static/js/Pieces/WBishop.js"></script>
+    <script src="../static/js/Pieces/WRook.js"></script>
+    <script src="../static/js/Pieces/WQueen.js"></script>
+    <script src="../static/js/Pieces/WKing.js"></script>
+    <script src="../static/js/Pieces/BPawn.js"></script>
+    <script src="../static/js/Pieces/BKnight.js"></script>
+    <script src="../static/js/Pieces/BBishop.js"></script>
+    <script src="../static/js/Pieces/BRook.js"></script>
+    <script src="../static/js/Pieces/BQueen.js"></script>
+    <script src="../static/js/Pieces/BKing.js"></script>
+
     <script src="../static/js/game.js"></script>
 {% endblock %}
