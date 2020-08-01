@@ -1,2 +1,2 @@
 # sockets
-My foray into using sockets through a browser-based chess game.
+My foray into sockets through a browser-based chess game.
