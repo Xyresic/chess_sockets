@@ -30,16 +30,12 @@ for (let x = 0; x < 8; x++) {
     }
 }
 
-let generateOppMoves = () => {
-
-}
-
 let check = (piece, move, opponent=false) => {
     return false;
 }
 
-let generateYourMoves = () => {
-    let moveFound = false;
+let generateValidMoves = () => {
+    let moves = [];
     for (let piece of boardState.filter(piece => {
         return piece && !(state[0] === 'w' ^ piece.isWhite());
     })) {
@@ -56,17 +52,16 @@ let generateYourMoves = () => {
                         //TODO en passant
                         if (move[0]) {
                             if (target && piece.isWhite() !== target.isWhite() && !check(piece, move)) {
-                                moveFound = true;
+                                moves.push([moveX, moveY]);
                                 piece.addMove(circle);
                             }
                         } else if (target) {
                             break;
                         } else if (Math.abs(move[1]) === 1 || piece.doubleMove && !check(piece, move)) {
-                            moveFound = true;
                             piece.addMove(circle);
                         }
                     } else if(!check(piece, move)) {
-                        moveFound = true;
+                        moves.push([moveX, moveY]);
                         piece.addMove(circle);
                         if (target) {
                             break;
@@ -76,11 +71,8 @@ let generateYourMoves = () => {
             }
         }
     }
-    if (!moveFound) {
-        //TODO checkmate
-    }
+    return moves;
 }
-
 
 let selectPiece = (piece) => {
     selectedPiece = piece;
@@ -112,6 +104,7 @@ let deselectPiece = (piece) => {
         //TODO destroy moves
         //TODO blue squares
         //TODO check -> red square
+        //TODO checkmate
     } else {
         piece.setAttribute('x', piece.obj.svgX());
         piece.setAttribute('y', piece.obj.svgY());
@@ -180,8 +173,11 @@ for (let y = 0; y < 8; y++) {
         }
     }
 }
+if (flip) {
+    boardState.reverse();
+}
 state.shift();
-generateYourMoves();
+generateValidMoves();
 
 let dragPiece = (event) => {
     if (selectedPiece !== undefined) {
