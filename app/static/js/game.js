@@ -4,6 +4,8 @@ state[0] = state[0].split('/');
 let boardState = [];
 let pt = board.createSVGPoint();
 let selectedPiece;
+let wKingCoord;
+let bKingCoord;
 
 for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
@@ -30,14 +32,28 @@ for (let x = 0; x < 8; x++) {
     }
 }
 
-let check = (piece, move, opponent=false) => {
-    return false;
+let check = (piece, target, self=true) => {
+    let previous = piece.y * 8 + piece.x;
+    let next = target[1] * 8 + target[0];
+    boardState[previous] = 0;
+    let copy = boardState[next]
+    boardState[next] = piece;
+    let kingCopy;
+    if (piece instanceof WKing || piece instanceof BKing) {
+        kingCopy = target;
+    } else {
+        kingCopy = state[0] === 'w' ^ !self? wKingCoord:bKingCoord;
+    }
+    let attackedSquares = generateValidMoves(self, true);
+    boardState[previous] = piece;
+    boardState[next] = copy;
+    return attackedSquares.includes(kingCopy.join(''));
 }
 
-let generateValidMoves = () => {
-    let moves = [];
+let generateValidMoves = (opp=false, noCheck=false) => {
+    let attackedSquares = [];
     for (let piece of boardState.filter(piece => {
-        return piece && !(state[0] === 'w' ^ piece.isWhite());
+        return piece && state[0] === 'w' ^ !piece.isWhite() ^ opp;
     })) {
         for (let group of piece.moves) {
             for (let move of group) {
@@ -51,18 +67,18 @@ let generateValidMoves = () => {
                     } else if (piece instanceof WPawn || piece instanceof BPawn) {
                         //TODO en passant
                         if (move[0]) {
-                            if (target && piece.isWhite() !== target.isWhite() && !check(piece, move)) {
-                                moves.push([moveX, moveY]);
-                                piece.addMove(circle);
+                            if (target && piece.isWhite() !== target.isWhite() && (noCheck || !check(piece, [moveX, moveY]))) {
+                                attackedSquares.push('' + moveX + moveY);
+                                if (!opp) piece.addMove(circle);
                             }
                         } else if (target) {
                             break;
-                        } else if (Math.abs(move[1]) === 1 || piece.doubleMove && !check(piece, move)) {
-                            piece.addMove(circle);
+                        } else if ((Math.abs(move[1]) === 1 || piece.doubleMove) && (noCheck || !check(piece, [moveX, moveY]))) {
+                            if (!opp) piece.addMove(circle);
                         }
-                    } else if(!check(piece, move)) {
-                        moves.push([moveX, moveY]);
-                        piece.addMove(circle);
+                    } else if(noCheck || !check(piece, [moveX, moveY])) {
+                        attackedSquares.push('' + moveX + moveY);
+                        if (!opp) piece.addMove(circle);
                         if (target) {
                             break;
                         }
@@ -71,7 +87,7 @@ let generateValidMoves = () => {
             }
         }
     }
-    return moves;
+    return attackedSquares;
 }
 
 let selectPiece = (piece) => {
@@ -149,6 +165,7 @@ for (let y = 0; y < 8; y++) {
                 break;
             case 'K':
                 boardState.push(new WKing(x, y, flip));
+                wKingCoord = [x, y];
                 break;
             case 'p':
                 boardState.push(new BPawn(x, y, flip));
@@ -167,17 +184,18 @@ for (let y = 0; y < 8; y++) {
                 break;
             case 'k':
                 boardState.push(new BKing(x, y, flip));
+                bKingCoord = [x, y];
                 break;
             default:
                 boardState.push(0);
         }
     }
 }
-if (flip) {
-    boardState.reverse();
-}
+if (flip) boardState.reverse();
 state.shift();
-generateValidMoves();
+if (state[0] === 'w' ^ flip) {
+    generateValidMoves();
+}
 
 let dragPiece = (event) => {
     if (selectedPiece !== undefined) {
