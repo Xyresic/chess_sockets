@@ -62,12 +62,16 @@ def game(room):
     else:
         return render_template('game.html', room=query.name, user1=query.user1, user2=user2, state=query.state, flip=0)
 
+@socketio.on('join')
+def join(room):
+    join_room(room)
+
 @socketio.on('move')
 def handle_move(data):
     room = Room.query.filter_by(name=data['room']).first()
     room.state = data['board']
     db.session.commit()
-    emit('update')
+    emit('update', room=data['room'])
 
 
 if __name__ == "__main__":

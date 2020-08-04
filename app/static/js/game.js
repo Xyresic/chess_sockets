@@ -1,4 +1,9 @@
 let socket = io();
+let room = $('title').text().slice(6);
+socket.on('connect', () => {
+   socket.emit('join', room);
+});
+
 let board = document.getElementById('board');
 state = state.split(' ');
 state[0] = state[0].split('/');
@@ -67,6 +72,7 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                         break;
                     } else if (piece instanceof WPawn || piece instanceof BPawn) {
                         //TODO en passant
+                        //TODO castling
                         if (move[0]) {
                             if (target && piece.isWhite() !== target.isWhite() && (noCheck || !check(piece, [moveX, moveY]))) {
                                 attackedSquares.push('' + moveX + moveY);
@@ -98,7 +104,9 @@ let toFEN = () => {
         let piece = boardState[i];
         FEN += piece? piece.toString():'.';
     }
-    FEN = FEN.slice(1) + ' ' + (state[0]? 'w ':'b ') + state.slice(1).join(' ');
+    FEN = FEN.slice(1);
+    if (state[0]) FEN = FEN.split('').reverse().join('');
+    FEN += ' ' + (state[0]? 'w ':'b ') + state.slice(1).join(' ');
     return FEN
 }
 
@@ -121,6 +129,7 @@ let deselectPiece = (piece) => {
         let circleX = circle.getAttribute('cx');
         let circleY = circle.getAttribute('cy');
         if (Math.abs(pieceX - circleX) <= 50 && Math.abs(pieceY - circleY) <= 50) {
+            $(`image[x=${circleX - 50}][y=${circleY - 50}]`).remove();
             piece.setAttribute('x', circleX - 50);
             piece.setAttribute('y', circleY - 50);
             obj.x = (circleX - 50) / 100;
@@ -147,9 +156,9 @@ let deselectPiece = (piece) => {
         boardState.forEach(piece => {
             if (piece) piece.clearMoves();
         });
-        socket.emit('move', {room: $('title').text().slice(6), board: toFEN()});
+        socket.emit('move', {room: room, board: toFEN()});
         //TODO en passant
-        //TODO switch players
+        //TODO castling
         //TODO check -> red square
         //TODO checkmate
     } else {
