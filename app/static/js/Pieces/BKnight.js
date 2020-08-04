@@ -9,4 +9,8 @@ class BKnight extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'n';
+    }
 }

@@ -5,4 +5,8 @@ class WKnight extends Piece {
         this.node = setPiece(this.x * 100, this.y * 100, this.link, this);
         this.knightMoves();
     }
+
+    toString = () => {
+        return 'N';
+    }
 }

@@ -101,4 +101,8 @@ class Piece {
         this.moves.push(sWest);
         this.moves.push(sEast);
     }
+
+    toString = () => {
+        return '';
+    }
 }

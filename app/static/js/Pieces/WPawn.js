@@ -6,4 +6,8 @@ class WPawn extends Piece {
         this.pawnMoves();
         this.doubleMove = this.y === 1 && flip || this.y === 6 && !flip;
     }
+
+    toString = () => {
+        return 'P';
+    }
 }

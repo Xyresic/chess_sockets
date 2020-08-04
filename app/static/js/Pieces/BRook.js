@@ -9,4 +9,8 @@ class BRook extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'r';
+    }
 }

@@ -9,4 +9,8 @@ class BBishop extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'b';
+    }
 }

@@ -1,3 +1,4 @@
+let socket = io();
 let board = document.getElementById('board');
 state = state.split(' ');
 state[0] = state[0].split('/');
@@ -42,7 +43,7 @@ let check = (piece, target, self=true) => {
     if (piece instanceof WKing || piece instanceof BKing) {
         kingCopy = target;
     } else {
-        kingCopy = state[0] === 'w' ^ !self? wKingCoord:bKingCoord;
+        kingCopy = state[0] ^ !self? wKingCoord:bKingCoord;
     }
     let attackedSquares = generateValidMoves(self, true);
     boardState[previous] = piece;
@@ -53,7 +54,7 @@ let check = (piece, target, self=true) => {
 let generateValidMoves = (opp=false, noCheck=false) => {
     let attackedSquares = [];
     for (let piece of boardState.filter(piece => {
-        return piece && state[0] === 'w' ^ !piece.isWhite() ^ opp;
+        return piece && state[0] ^ !piece.isWhite() ^ opp;
     })) {
         for (let group of piece.moves) {
             for (let move of group) {
@@ -90,6 +91,17 @@ let generateValidMoves = (opp=false, noCheck=false) => {
     return attackedSquares;
 }
 
+let toFEN = () => {
+    let FEN = '';
+    for (let i = 0; i < 64; i++) {
+        if (!(i % 8)) FEN += '/';
+        let piece = boardState[i];
+        FEN += piece? piece.toString():'.';
+    }
+    FEN = FEN.slice(1) + ' ' + (state[0]? 'w ':'b ') + state.slice(1).join(' ');
+    return FEN
+}
+
 let selectPiece = (piece) => {
     selectedPiece = piece;
     piece.obj.showMoves();
@@ -98,27 +110,46 @@ let selectPiece = (piece) => {
 
 let deselectPiece = (piece) => {
     selectedPiece = undefined;
-    piece.obj.hideMoves();
+    let obj = piece.obj;
+    obj.hideMoves();
     let placed = false;
+    let ogX = obj.x;
+    let ogY = obj.y;
     let pieceX = parseFloat(piece.getAttribute('x')) + 50;
     let pieceY = parseFloat(piece.getAttribute('y')) + 50;
-    for (let circle of piece.obj.move_icons) {
+    for (let circle of obj.move_icons) {
         let circleX = circle.getAttribute('cx');
         let circleY = circle.getAttribute('cy');
         if (Math.abs(pieceX - circleX) <= 50 && Math.abs(pieceY - circleY) <= 50) {
             piece.setAttribute('x', circleX - 50);
             piece.setAttribute('y', circleY - 50);
-            piece.obj.x = (circleX - 50) / 100;
-            piece.obj.y = (circleY - 50) / 100;
+            obj.x = (circleX - 50) / 100;
+            obj.y = (circleY - 50) / 100;
             placed = true;
             break;
         }
     }
     if (placed) {
-        //TODO capturing
+        state[0] = !state[0];
+        boardState[ogY * 8 + ogX] = 0;
+        boardState[obj.y * 8 + obj.x] = obj;
+        for (let square of $('rect[fill="#add8e6"]')) {
+            let x = parseInt(square.getAttribute(x));
+            let y = parseInt(square.getAttribute(y));
+            if ((x + y) % 2) {
+                square.setAttribute('fill', '#f0f0f0');
+            } else {
+                square.setAttribute('fill', 'white');
+            }
+        }
+        $(`rect[x=${ogX * 100}][y=${ogY * 100}]`).attr('fill', '#add8e6');
+        $(`rect[x=${obj.x * 100}][y=${obj.y * 100}]`).attr('fill', '#add8e6');
+        boardState.forEach(piece => {
+            if (piece) piece.clearMoves();
+        });
+        socket.emit('move', {room: $('title').text().slice(6), board: toFEN()});
+        //TODO en passant
         //TODO switch players
-        //TODO destroy moves
-        //TODO blue squares
         //TODO check -> red square
         //TODO checkmate
     } else {
@@ -193,9 +224,8 @@ for (let y = 0; y < 8; y++) {
 }
 if (flip) boardState.reverse();
 state.shift();
-if (state[0] === 'w' ^ flip) {
-    generateValidMoves();
-}
+state[0] = state[0] === 'w';
+if (state[0] ^ flip) generateValidMoves();
 
 let dragPiece = (event) => {
     if (selectedPiece !== undefined) {
@@ -220,3 +250,4 @@ board.addEventListener('mousemove', e => {
     dragPiece(e)
 });
 board.addEventListener('mouseout', returnPiece);
+socket.on('update', () => {console.log('yep')});

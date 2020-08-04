@@ -6,4 +6,8 @@ class WKing extends Piece {
         this.parallelMoves(true);
         this.diagonalMoves(true);
     }
+
+    toString = () => {
+        return 'K';
+    }
 }

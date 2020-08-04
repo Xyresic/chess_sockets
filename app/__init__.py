@@ -2,7 +2,7 @@ import os
 from functools import wraps
 
 from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_socketio import SocketIO, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 from app.models import db, Room
 
@@ -61,6 +61,14 @@ def game(room):
         return render_template('game.html', room=query.name, user1=user2, user2=query.user1, state=query.state, flip=1)
     else:
         return render_template('game.html', room=query.name, user1=query.user1, user2=user2, state=query.state, flip=0)
+
+@socketio.on('move')
+def handle_move(data):
+    room = Room.query.filter_by(name=data['room']).first()
+    room.state = data['board']
+    db.session.commit()
+    emit('update')
+
 
 if __name__ == "__main__":
     app.debug = True

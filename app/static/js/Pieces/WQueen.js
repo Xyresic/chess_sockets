@@ -6,4 +6,8 @@ class WQueen extends Piece {
         this.parallelMoves();
         this.diagonalMoves();
     }
+
+    toString = () => {
+        return 'Q';
+    }
 }

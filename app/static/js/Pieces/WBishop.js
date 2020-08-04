@@ -5,4 +5,8 @@ class WBishop extends Piece {
         this.node = setPiece(this.x * 100, this.y * 100, this.link, this);
         this.diagonalMoves();
     }
+
+    toString = () => {
+        return 'B';
+    }
 }

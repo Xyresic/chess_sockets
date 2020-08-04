@@ -10,4 +10,8 @@ class BQueen extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'q';
+    }
 }

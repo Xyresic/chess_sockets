@@ -10,4 +10,8 @@ class BKing extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'k';
+    }
 }

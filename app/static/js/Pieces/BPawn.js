@@ -10,4 +10,8 @@ class BPawn extends Piece {
     isWhite = () => {
         return false;
     }
+
+    toString = () => {
+        return 'p';
+    }
 }
