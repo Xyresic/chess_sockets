@@ -77,10 +77,8 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                     if (target && piece.isWhite() === target.isWhite()) {
                         break;
                     } else if (piece instanceof WPawn || piece instanceof BPawn) {
-                        //TODO en passant
-                        //TODO castling
                         if (move[0]) {
-                            if (target && piece.isWhite() !== target.isWhite() && (noCheck || !check(piece, [moveX, moveY]))) {
+                            if (('' + moveX + moveY === state[2] || target && piece.isWhite() !== target.isWhite()) && (noCheck || !check(piece, [moveX, moveY]))) {
                                 attackedSquares.push('' + moveX + moveY);
                                 if (!noCheck) piece.addMove(circle);
                             }
@@ -90,6 +88,7 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                             if (!noCheck) piece.addMove(circle);
                         }
                     } else if(noCheck || !check(piece, [moveX, moveY])) {
+                        //TODO castling
                         attackedSquares.push('' + moveX + moveY);
                         if (!noCheck) piece.addMove(circle);
                         if (target) {
@@ -150,8 +149,22 @@ let deselectPiece = (piece) => {
         boardState.forEach(piece => {
             if (piece) piece.clearMoves();
         });
-        if (obj instanceof WKing) wKingCoord = [obj.x, obj.y];
-        if (obj instanceof BKing) bKingCoord = [obj.x, obj.y];
+        let enPassantTarget = state[2];
+        state[2] = '-';
+        if (obj instanceof WKing) {
+            wKingCoord = [obj.x, obj.y];
+        } else if (obj instanceof BKing) {
+            bKingCoord = [obj.x, obj.y];
+        } else if (obj instanceof WPawn || obj instanceof BPawn) {
+            if ('' + obj.x + obj.y === enPassantTarget) {
+                boardState[(obj.y + 1) * 8 + obj.x] = 0;
+                $(`image[x=${obj.x * 100}][y=${(obj.y + 1) * 100}]`).remove();
+            } else if (obj.y === 0) {
+                //TODO promotion
+            } else if (ogY - obj.y === 2) {
+                state[2] = '' + obj.x + (obj.y + 1);
+            }
+        }
         for (let square of $('rect[fill="#add8e6"]')) {
             let x = square.getAttribute('x') / 100;
             let y = square.getAttribute('y') / 100;
@@ -174,9 +187,7 @@ let deselectPiece = (piece) => {
         }
         socket.emit('move', {room: room, board: toFEN()});
         state[0] = !state[0];
-        //TODO en passant
         //TODO castling
-        //TODO promotion
         //TODO checkmate
     } else {
         piece.setAttribute('x', piece.obj.svgX());
