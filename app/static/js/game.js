@@ -62,6 +62,18 @@ let check = (piece, target) => {
     return attackedSquares.includes(kingCopy.join(''));
 }
 
+let enPassant = () => {
+    let enPassantTarget = state[2];
+    if (flip && enPassantTarget !== '-') {
+        enPassantTarget = enPassantTarget.split('');
+        enPassantTarget.forEach((e, i) => {
+            enPassantTarget[i] = 7 - e;
+        });
+        enPassantTarget = enPassantTarget.join('');
+    }
+    return enPassantTarget;
+}
+
 let generateValidMoves = (opp=false, noCheck=false) => {
     let attackedSquares = [];
     for (let piece of boardState.filter(piece => {
@@ -78,7 +90,7 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                         break;
                     } else if (piece instanceof WPawn || piece instanceof BPawn) {
                         if (move[0]) {
-                            if (('' + moveX + moveY === state[2] || target && piece.isWhite() !== target.isWhite()) && (noCheck || !check(piece, [moveX, moveY]))) {
+                            if (('' + moveX + moveY === enPassant() || target && piece.isWhite() !== target.isWhite()) && (noCheck || !check(piece, [moveX, moveY]))) {
                                 attackedSquares.push('' + moveX + moveY);
                                 if (!noCheck) piece.addMove(circle);
                             }
@@ -149,7 +161,7 @@ let deselectPiece = (piece) => {
         boardState.forEach(piece => {
             if (piece) piece.clearMoves();
         });
-        let enPassantTarget = state[2];
+        let enPassantTarget = enPassant();
         state[2] = '-';
         if (obj instanceof WKing) {
             wKingCoord = [obj.x, obj.y];
@@ -162,7 +174,11 @@ let deselectPiece = (piece) => {
             } else if (obj.y === 0) {
                 //TODO promotion
             } else if (ogY - obj.y === 2) {
-                state[2] = '' + obj.x + (obj.y + 1);
+                if (flip) {
+                    state[2] = '' + (7 - obj.x) + (6 - obj.y);
+                } else{
+                    state[2] = '' + obj.x + (obj.y + 1);
+                }
             }
         }
         for (let square of $('rect[fill="#add8e6"]')) {
