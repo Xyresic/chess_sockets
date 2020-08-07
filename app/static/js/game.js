@@ -38,10 +38,14 @@ for (let x = 0; x < 8; x++) {
     }
 }
 
-let boardStateCheck = (self=false) => {
+let boardStateCheck = (self=false, castle=false) => {
     let attackedSquares = generateValidMoves(self, true);
-    let kingCoord = state[0] ^ self? bKingCoord:wKingCoord;
-    return attackedSquares.includes(kingCoord.join(''));
+    if (castle) {
+        return attackedSquares;
+    } else {
+        let kingCoord = state[0] ^ self? bKingCoord:wKingCoord;
+        return attackedSquares.includes(kingCoord.join(''));
+    }
 }
 
 let check = (piece, target) => {
@@ -86,9 +90,8 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                     let moveY = piece.y + move[1];
                     let target = boardState[moveY * 8 + moveX];
                     let circle = $(`circle[id=${moveX}${moveY}]`)[0];
-                    if (target && piece.isWhite() === target.isWhite()) {
-                        break;
-                    } else if (piece instanceof WPawn || piece instanceof BPawn) {
+                    if (target && piece.isWhite() === target.isWhite()) break;
+                    if (piece instanceof WPawn || piece instanceof BPawn) {
                         if (move[0]) {
                             if (('' + moveX + moveY === enPassant() || target && piece.isWhite() !== target.isWhite()) && (noCheck || !check(piece, [moveX, moveY]))) {
                                 attackedSquares.push('' + moveX + moveY);
@@ -99,13 +102,40 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                         } else if ((Math.abs(move[1]) === 1 || piece.doubleMove) && (noCheck || !check(piece, [moveX, moveY]))) {
                             if (!noCheck) piece.addMove(circle);
                         }
-                    } else if(noCheck || !check(piece, [moveX, moveY])) {
-                        //TODO castling
+                    } else if (!noCheck && piece instanceof WKing && Math.abs(move[0]) === 2) {
+                        let attackedSquares = boardStateCheck(true, true);
+                        if (move[0] === 2) {
+                            if (!state[1].includes('K')) break;
+                            if (!(boardState[61] === 0 && boardState[62] === 0)) break;
+                            if (!attackedSquares.some(e => {
+                                return e === '47' || e === '57' || e === '67';
+                            })) piece.addMove(circle);
+                        } else {
+                            if (!state[1].includes('Q')) break;
+                            if (!(boardState[59] === 0 && boardState[58] === 0 && boardState[57] === 0)) break;
+                            if (!attackedSquares.some(e => {
+                                return e === '47' || e === '37' || e === '27';
+                            })) piece.addMove(circle);
+                        }
+                    } else if (!noCheck && piece instanceof BKing && Math.abs(move[0]) === 2) {
+                        let attackedSquares = boardStateCheck(true, true);
+                        if (move[0] === 2) {
+                            if (!state[1].includes('q')) break;
+                            if (!(boardState[60] === 0 && boardState[61] === 0 && boardState[62] === 0)) break;
+                            if (!attackedSquares.some(e => {
+                                return e === '37' || e === '47' || e === '57';
+                            })) piece.addMove(circle);
+                        } else {
+                            if (!state[1].includes('k')) break;
+                            if (!(boardState[58] === 0 && boardState[57] === 0)) break;
+                            if (!attackedSquares.some(e => {
+                                return e === '37' || e === '27' || e === '17';
+                            })) piece.addMove(circle);
+                        }
+                    } else if (noCheck || !check(piece, [moveX, moveY])) {
                         attackedSquares.push('' + moveX + moveY);
                         if (!noCheck) piece.addMove(circle);
-                        if (target) {
-                            break;
-                        }
+                        if (target) break;
                     }
                 }
             }
@@ -147,10 +177,9 @@ let deselectPiece = (piece) => {
         let circleY = circle.getAttribute('cy');
         if (Math.abs(pieceX - circleX) <= 50 && Math.abs(pieceY - circleY) <= 50) {
             $(`image[x=${circleX - 50}][y=${circleY - 50}]`).remove();
-            piece.setAttribute('x', circleX - 50);
-            piece.setAttribute('y', circleY - 50);
             obj.x = (circleX - 50) / 100;
             obj.y = (circleY - 50) / 100;
+            obj.updateNode();
             placed = true;
             break;
         }
@@ -161,13 +190,45 @@ let deselectPiece = (piece) => {
         boardState.forEach(piece => {
             if (piece) piece.clearMoves();
         });
-        let enPassantTarget = enPassant();
         state[2] = '-';
         if (obj instanceof WKing) {
             wKingCoord = [obj.x, obj.y];
+            if (obj.x - ogX ===  2) {
+                boardState[63].x = 5;
+                boardState[63].updateNode();
+                boardState[61] = boardState[63];
+                boardState[63] = 0;
+            } else if (obj.x - ogX === -2) {
+                boardState[56].x = 3;
+                boardState[56].updateNode();
+                boardState[59] = boardState[56];
+                boardState[56] = 0;
+            }
+            state[1] = state[1].replace('K', '');
+            state[1] = state[1].replace('Q', '');
         } else if (obj instanceof BKing) {
             bKingCoord = [obj.x, obj.y];
+            if (obj.x - ogX ===  2) {
+                boardState[63].x = 4;
+                boardState[63].updateNode();
+                boardState[60] = boardState[63];
+                boardState[63] = 0;
+            } else if (obj.x - ogX === -2) {
+                boardState[56].x = 2;
+                boardState[56].updateNode();
+                boardState[58] = boardState[56];
+                boardState[56] = 0;
+            }
+            state[1] = state[1].replace('k', '');
+            state[1] = state[1].replace('q', '');
+        } else if (obj instanceof WRook) {
+            if (ogX === 7 && ogY === 7) state[1] = state[1].replace('K', '');
+            if (ogX === 0 && ogY === 7) state[1] = state[1].replace('Q', '');
+        } else if (obj instanceof BRook) {
+            if (ogX === 7 && ogY === 7) state[1] = state[1].replace('q', '');
+            if (ogX === 0 && ogY === 7) state[1] = state[1].replace('k', '');
         } else if (obj instanceof WPawn || obj instanceof BPawn) {
+            let enPassantTarget = enPassant();
             if ('' + obj.x + obj.y === enPassantTarget) {
                 boardState[(obj.y + 1) * 8 + obj.x] = 0;
                 $(`image[x=${obj.x * 100}][y=${(obj.y + 1) * 100}]`).remove();
@@ -179,8 +240,10 @@ let deselectPiece = (piece) => {
                 } else{
                     state[2] = '' + obj.x + (obj.y + 1);
                 }
+                obj.doubleMove = false;
             }
         }
+        if (state[1] === '') state[1] = '-';
         for (let square of $('rect[fill="#add8e6"]')) {
             let x = square.getAttribute('x') / 100;
             let y = square.getAttribute('y') / 100;
@@ -203,7 +266,6 @@ let deselectPiece = (piece) => {
         }
         socket.emit('move', {room: room, board: toFEN()});
         state[0] = !state[0];
-        //TODO castling
         //TODO checkmate
     } else {
         piece.setAttribute('x', piece.obj.svgX());
@@ -291,7 +353,6 @@ king = state[0]? bKingCoord:wKingCoord;
 if (boardStateCheck()) {
     $(`rect[x=${king[0] * 100}][y=${king[1] * 100}]`).attr('fill', '#ff6462');
 }
-
 
 let dragPiece = (event) => {
     if (selectedPiece !== undefined) {

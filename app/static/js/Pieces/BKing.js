@@ -5,6 +5,7 @@ class BKing extends Piece {
         this.node = setPiece(this.svgX(), this.svgY(), this.link, this);
         this.parallelMoves(true);
         this.diagonalMoves(true);
+        this.castling();
     }
 
     isWhite = () => {

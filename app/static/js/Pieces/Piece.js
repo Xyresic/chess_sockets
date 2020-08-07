@@ -19,6 +19,11 @@ class Piece {
         return this.y * 100;
     }
 
+    updateNode = () => {
+        this.node.setAttribute('x', this.x * 100);
+        this.node.setAttribute('y', this.y * 100);
+    }
+
     isWhite = () => {
         return true;
     }
@@ -100,6 +105,11 @@ class Piece {
         this.moves.push(nEast);
         this.moves.push(sWest);
         this.moves.push(sEast);
+    }
+
+    castling = () => {
+        this.moves.push([[2, 0]]);
+        this.moves.push([[-2, 0]]);
     }
 
     toString = () => {
