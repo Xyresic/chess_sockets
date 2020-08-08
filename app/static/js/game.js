@@ -157,6 +157,18 @@ let toFEN = () => {
     return FEN
 }
 
+let passTurn = () => {
+    if (boardStateCheck()) {
+        $(`rect[x=${king[0] * 100}][y=${king[1] * 100}]`).attr('fill', '#ff6462');
+    }
+    socket.emit('move', {room: room, board: toFEN()});
+    state[0] = !state[0];
+}
+
+let promote = () => {
+    
+}
+
 let selectPiece = (piece) => {
     selectedPiece = piece;
     piece.obj.showMoves();
@@ -191,6 +203,7 @@ let deselectPiece = (piece) => {
             if (piece) piece.clearMoves();
         });
         state[2] = '-';
+        let notPromoting = true;
         if (obj instanceof WKing) {
             wKingCoord = [obj.x, obj.y];
             if (obj.x - ogX ===  2) {
@@ -233,7 +246,8 @@ let deselectPiece = (piece) => {
                 boardState[(obj.y + 1) * 8 + obj.x] = 0;
                 $(`image[x=${obj.x * 100}][y=${(obj.y + 1) * 100}]`).remove();
             } else if (obj.y === 0) {
-                //TODO promotion
+                notPromoting = false;
+                promote();
             } else if (ogY - obj.y === 2) {
                 if (flip) {
                     state[2] = '' + (7 - obj.x) + (6 - obj.y);
@@ -261,11 +275,7 @@ let deselectPiece = (piece) => {
         }
         $(`rect[x=${ogX * 100}][y=${ogY * 100}]`).attr('fill', '#add8e6');
         $(`rect[x=${obj.x * 100}][y=${obj.y * 100}]`).attr('fill', '#add8e6');
-        if (boardStateCheck()) {
-            $(`rect[x=${king[0] * 100}][y=${king[1] * 100}]`).attr('fill', '#ff6462');
-        }
-        socket.emit('move', {room: room, board: toFEN()});
-        state[0] = !state[0];
+        if (notPromoting) passTurn();
         //TODO checkmate
     } else {
         piece.setAttribute('x', piece.obj.svgX());
