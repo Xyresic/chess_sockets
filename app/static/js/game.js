@@ -5,6 +5,8 @@ socket.on('connect', () => {
 });
 
 let board = document.getElementById('board');
+let promotions = document.getElementsByClassName('promotedPiece');
+let modal = document.getElementsByClassName('modal')[0];
 state = state.split(' ');
 state[0] = state[0].split('/');
 let boardState = [];
@@ -12,6 +14,7 @@ let pt = board.createSVGPoint();
 let selectedPiece;
 let wKingCoord;
 let bKingCoord;
+let promotedPawn;
 
 for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
@@ -165,10 +168,6 @@ let passTurn = () => {
     state[0] = !state[0];
 }
 
-let promote = () => {
-    
-}
-
 let selectPiece = (piece) => {
     selectedPiece = piece;
     piece.obj.showMoves();
@@ -247,7 +246,8 @@ let deselectPiece = (piece) => {
                 $(`image[x=${obj.x * 100}][y=${(obj.y + 1) * 100}]`).remove();
             } else if (obj.y === 0) {
                 notPromoting = false;
-                promote();
+                promotedPawn = piece;
+                modal.style.display = 'inline';
             } else if (ogY - obj.y === 2) {
                 if (flip) {
                     state[2] = '' + (7 - obj.x) + (6 - obj.y);
@@ -383,8 +383,35 @@ let returnPiece = () => {
     }
 }
 
+let promote = function() {
+    let newPiece;
+    let pawn = promotedPawn.obj;
+    switch (this.getAttribute('id')) {
+        case 'promotedQueen':
+            newPiece = flip? new BQueen(7 - pawn.x, 7 - pawn.y, flip):new WQueen(pawn.x, pawn.y, flip);
+            break;
+        case 'promotedRook':
+            newPiece = flip? new BRook(7 - pawn.x, 7 - pawn.y, flip):new WRook(pawn.x, pawn.y, flip);
+            break;
+        case 'promotedBishop':
+            newPiece = flip? new BBishop(7 - pawn.x, 7 - pawn.y, flip):new WBishop(pawn.x, pawn.y, flip);
+            break;
+        default:
+            newPiece = flip? new BKnight(7 - pawn.x, 7 - pawn.y, flip):new WKnight(pawn.x, pawn.y, flip);
+            break;
+    }
+    boardState[pawn.y * 8 + pawn.x] = newPiece;
+    promotedPawn.remove();
+    promotedPawn = undefined;
+    modal.style.display = 'none';
+    passTurn();
+}
+
 board.addEventListener('mousemove', e => {
     dragPiece(e)
 });
 board.addEventListener('mouseout', returnPiece);
+for (let piece of promotions) {
+    piece.addEventListener('click', promote);
+}
 socket.on('update', () => {console.log('yep')});
