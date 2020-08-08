@@ -1,7 +1,7 @@
 class BRook extends Piece {
     constructor(x, y, flip) {
         super(x, y, flip);
-        this.link = 'https://user-images.githubusercontent.com/43048491/87862792-f0d7ce00-c921-11ea-954d-96232b73ec09.png';
+        this.link = 'https://user-images.githubusercontent.com/43048491/89712879-b4682280-d961-11ea-83ea-e2e699f29b19.png';
         this.node = setPiece(this.svgX(), this.svgY(), this.link, this);
         this.parallelMoves();
     }
