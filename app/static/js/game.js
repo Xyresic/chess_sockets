@@ -96,7 +96,7 @@ let generateValidMoves = (opp=false, noCheck=false) => {
                     if (target && piece.isWhite() === target.isWhite()) break;
                     if (piece instanceof WPawn || piece instanceof BPawn) {
                         if (move[0]) {
-                            if (('' + moveX + moveY === enPassant() || target && piece.isWhite() !== target.isWhite()) && (noCheck || !check(piece, [moveX, moveY]))) {
+                            if (noCheck || (('' + moveX + moveY === enPassant() || target && piece.isWhite() !== target.isWhite()) && !check(piece, [moveX, moveY]))) {
                                 attackedSquares.push('' + moveX + moveY);
                                 if (!noCheck) piece.addMove(circle);
                             }
