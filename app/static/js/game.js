@@ -407,6 +407,10 @@ let promote = function() {
     passTurn();
 }
 
+let updateBoard = () => {
+    document.getElementById('moveSound').play();
+}
+
 board.addEventListener('mousemove', e => {
     dragPiece(e)
 });
@@ -414,4 +418,4 @@ board.addEventListener('mouseout', returnPiece);
 for (let piece of promotions) {
     piece.addEventListener('click', promote);
 }
-socket.on('update', () => {console.log('yep')});
+socket.on('update', updateBoard);

@@ -1,3 +1,7 @@
+audio {
+    display: none;
+}
+
 svg {
     border: 1px solid lightgray;
     width: 80vh;
