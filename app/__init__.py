@@ -71,8 +71,18 @@ def handle_move(data):
     room = Room.query.filter_by(name=data['room']).first()
     room.state = data['board']
     db.session.commit()
-    emit('update', room=data['room'])
+    emit('update', (data['user'], data['board'], data['move']), room=data['room'])
 
+@socketio.on('endgame')
+def end_game(data):
+    if data['type'] == 'checkmate':
+        room = Room.query.filter_by(name=data['room']).first()
+        if data['loser'] == 1:
+            emit('checkmate', room.user1, room=data['room'])
+        else:
+            emit('checkmate', room.user2, room=data['room'])
+    else:
+        emit('draw', room=data['room'])
 
 if __name__ == "__main__":
     app.debug = True
