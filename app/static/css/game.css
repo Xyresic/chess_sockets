@@ -11,7 +11,7 @@ svg {
     font-size: 3.25rem;
 }
 
-.modal {
+.p-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -19,6 +19,7 @@ svg {
     height: 100%;
     width: 100%;
     background-color: rgba(0, 0, 0, 0.4);
+    display: none;
 }
 
 #promotion {

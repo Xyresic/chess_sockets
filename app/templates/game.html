@@ -22,7 +22,8 @@
             <h1 class="display-4">{{ user1 }}</h1>
         </div>
     </div>
-    <div class="modal">
+
+    <div class="p-modal" id="promote">
         <div class="d-flex justify-content-center" id="promotion">
             {% if flip == 0 %}
                 <img src="../static/images/wq.png" class="promotedPiece" id="promotedQueen">
@@ -35,6 +36,43 @@
                 <img src="../static/images/bb.png" class="promotedPiece" id="promotedBishop">
                 <img src="../static/images/bn.png" class="promotedPiece" id="promotedKnight">
             {% endif %}
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" id="checkmate">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center">
+                        <h1 class="display-2">Checkmate</h1>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <h1 class="display-4" id="winner"></h1>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-outline-primary" href={{ url_for('root') }}>
+                        Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" id="draw">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center">
+                        <h1 class="display-1">Draw</h1>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-outline-primary" href={{ url_for('root') }}>
+                        Home
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

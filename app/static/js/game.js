@@ -6,7 +6,7 @@ socket.on('connect', () => {
 
 let board = document.getElementById('board');
 let promotions = document.getElementsByClassName('promotedPiece');
-let modal = document.getElementsByClassName('modal')[0];
+let promoteModal = document.getElementById('promote');
 let boardState = new Array(64).fill(0);
 let pt = board.createSVGPoint();
 let selectedPiece;
@@ -314,11 +314,12 @@ let setPiece = (x, y, link, obj) => {
 }
 
 let checkmate = (winner) => {
-    console.log(`${winner} wins by checkmate`);
+    $('#winner').text(`${winner} Wins`);
+    $('#checkmate').modal('toggle');
 }
 
 let draw = () => {
-    console.log('draw');
+    $('#draw').modal('toggle');
 }
 
 let setup = () => {
@@ -433,7 +434,7 @@ let promote = function() {
     boardState[pawn.y * 8 + pawn.x] = newPiece;
     promotedPawn.remove();
     promotedPawn = undefined;
-    modal.style.display = 'none';
+    promoteModal.style.display = 'none';
     passTurn();
 }
 
