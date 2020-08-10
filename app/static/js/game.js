@@ -1,4 +1,4 @@
-let socket = io();
+let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 let room = $('title').text().slice(6);
 socket.on('connect', () => {
    socket.emit('join', room);
@@ -450,6 +450,13 @@ let updateBoard = (user, board, move) => {
     }
 }
 
+let updateOpponent = (opp) => {
+    let display = $('h1')[0];
+    if (opp !== undefined && display.innerText === 'Waiting for opponent ...') {
+        display.innerText = opp;
+    }
+}
+
 drawGrid();
 setup();
 board.addEventListener('mousemove', e => {
@@ -459,6 +466,7 @@ board.addEventListener('mouseout', returnPiece);
 for (let piece of promotions) {
     piece.addEventListener('click', promote);
 }
+socket.on('update_opponent', o => {updateOpponent(o)});
 socket.on('update', (u, b, m) => {updateBoard(u, b, m)});
 socket.on('checkmate', winner => {checkmate(winner)});
 socket.on('draw', draw);

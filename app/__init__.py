@@ -26,15 +26,18 @@ def authenticate_user(route):
         return route(*args, **kwargs)
     return authenticate
 
+def get_room(room):
+    return Room.query.filter_by(name=room).first()
+
 @app.route('/', methods=['GET', 'POST'])
 def root():
     global current_user
     if 'name' in request.form:
         user = request.form['name']
         room = request.form['room']
-        query = Room.query.filter_by(name=room).first()
+        query = get_room(room)
         if query is not None:
-            if query.user2 is None:
+            if query.user2 is None and user != query.user1:
                 query.user2 = user
                 db.session.commit()
                 current_user = user
@@ -55,7 +58,7 @@ def root():
 @app.route('/game/<room>')
 @authenticate_user
 def game(room):
-    query = Room.query.filter_by(name=room).first()
+    query = get_room(room)
     user2 = query.user2 if query.user2 is not None else 'Waiting for opponent ...'
     if current_user == user2:
         return render_template('game.html', room=query.name, user1=user2, user2=query.user1, state=query.state, flip=1)
@@ -64,11 +67,13 @@ def game(room):
 
 @socketio.on('join')
 def join(room):
+    query = get_room(room)
     join_room(room)
+    emit('update_opponent', query.user2, room=room)
 
 @socketio.on('move')
 def handle_move(data):
-    room = Room.query.filter_by(name=data['room']).first()
+    room = get_room(data['room'])
     room.state = data['board']
     db.session.commit()
     emit('update', (data['user'], data['board'], data['move']), room=data['room'])
@@ -76,7 +81,7 @@ def handle_move(data):
 @socketio.on('endgame')
 def end_game(data):
     if data['type'] == 'checkmate':
-        room = Room.query.filter_by(name=data['room']).first()
+        room = get_room(data['room'])
         if data['loser'] == 1:
             emit('checkmate', room.user1, room=data['room'])
         else:
