@@ -15,6 +15,7 @@ let bKingCoord;
 let king;
 let promotedPawn;
 let notPromoting = true;
+let pawnMoves = false;
 
 let drawGrid = () => {
     for (let x = 0; x < 8; x++) {
@@ -277,10 +278,11 @@ let setup = () => {
         if (moves.length === 0) {
             if ($(`rect[x=${king[0] * 100}][y=${king[1] * 100}]`).attr('fill') === '#ff6462') {
                 socket.emit('endgame', {room: room, type: 'checkmate', loser: flip});
-            } else {
+            } else if (!pawnMoves){
                 socket.emit('endgame', {room: room, type: 'draw'});
             }
         }
+        pawnMoves = false;
     }
     king = state[0] ? bKingCoord : wKingCoord;
     if (boardStateCheck()) markCheck();

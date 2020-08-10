@@ -33,6 +33,7 @@ class BPawn extends Piece {
                     } else if (target) {
                         break;
                     } else if ((Math.abs(move[1]) === 1 || this.doubleMove) && (noCheck || !check(this, [moveX, moveY]))) {
+                        pawnMoves = true;
                         if (!noCheck) this.addMove(circle);
                     }
                 }
