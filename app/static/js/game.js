@@ -278,7 +278,7 @@ let setup = () => {
         if (moves.length === 0) {
             if ($(`rect[x=${king[0] * 100}][y=${king[1] * 100}]`).attr('fill') === '#ff6462') {
                 socket.emit('endgame', {room: room, type: 'checkmate', loser: flip});
-            } else if (!pawnMoves){
+            } else if (!pawnMoves) {
                 socket.emit('endgame', {room: room, type: 'draw'});
             }
         }
