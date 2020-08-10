@@ -57,7 +57,7 @@ class BPawn extends Piece {
             } else {
                 state[2] = '' + this.x + (this.y + 1);
             }
-            this.doubleMove = false;
         }
+        this.doubleMove = false;
     }
 }
