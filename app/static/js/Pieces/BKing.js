@@ -53,6 +53,7 @@ class BKing extends Piece {
     }
 
     place = (ogX, ogY) => {
+        state[2] = '-';
         bKingCoord = [this.x, this.y];
         if (this.x - ogX === 2) {
             boardState[63].x = 4;

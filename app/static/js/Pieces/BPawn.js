@@ -44,6 +44,7 @@ class BPawn extends Piece {
 
     place = (ogX, ogY) => {
         let enPassantTarget = enPassant();
+        state[2] = '-';
         if ('' + this.x + this.y === enPassantTarget) {
             boardState[(this.y + 1) * 8 + this.x] = 0;
             $(`image[x=${this.x * 100}][y=${(this.y + 1) * 100}]`).remove();

@@ -138,5 +138,6 @@ class Piece {
     }
 
     place = (ogX, ogY) => {
+        state[2] = '-';
     }
 }

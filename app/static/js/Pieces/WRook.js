@@ -11,6 +11,7 @@ class WRook extends Piece {
     }
 
     place = (ogX, ogY) => {
+        state[2] = '-';
         if (ogX === 7 && ogY === 7) state[1] = state[1].replace('K', '');
         if (ogX === 0 && ogY === 7) state[1] = state[1].replace('Q', '');
     }

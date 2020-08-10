@@ -49,6 +49,7 @@ class WKing extends Piece {
     }
 
     place = (ogX, ogY) => {
+        state[2] = '-';
         wKingCoord = [this.x, this.y];
         if (this.x - ogX === 2) {
             boardState[63].x = 5;

@@ -168,7 +168,6 @@ let deselectPiece = (piece) => {
         boardState.forEach(piece => {
             if (piece) piece.clearMoves();
         });
-        state[2] = '-';
         obj.place(ogX, ogY);
         if (state[1] === '') state[1] = '-';
         removePrevMove();
