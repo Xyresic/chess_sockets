@@ -6,11 +6,11 @@ class BKnight extends Piece {
         this.knightMoves();
     }
 
-    isWhite = () => {
-        return false;
-    }
-
     toString = () => {
         return 'n';
+    }
+
+    isWhite = () => {
+        return false;
     }
 }

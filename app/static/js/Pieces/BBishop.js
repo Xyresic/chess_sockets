@@ -6,11 +6,11 @@ class BBishop extends Piece {
         this.diagonalMoves();
     }
 
-    isWhite = () => {
-        return false;
-    }
-
     toString = () => {
         return 'b';
+    }
+
+    isWhite = () => {
+        return false;
     }
 }

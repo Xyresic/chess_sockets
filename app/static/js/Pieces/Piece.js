@@ -11,6 +11,10 @@ class Piece {
         this.move_icons = [];
     }
 
+    toString = () => {
+        return '';
+    }
+
     svgX = () => {
         return this.x * 100;
     }
@@ -112,7 +116,27 @@ class Piece {
         this.moves.push([[-2, 0]]);
     }
 
-    toString = () => {
-        return '';
+    generateMoves = (noCheck) => {
+        let attackingSquares = [];
+        for (let group of this.moves) {
+            for (let move of group) {
+                if (this.inBounds(move)) {
+                    let moveX = this.x + move[0];
+                    let moveY = this.y + move[1];
+                    let target = boardState[moveY * 8 + moveX];
+                    let circle = $(`circle[id=${moveX}${moveY}]`)[0];
+                    if (target && this.isWhite() === target.isWhite()) break;
+                    if (noCheck || !check(this, [moveX, moveY])) {
+                        attackingSquares.push('' + moveX + moveY);
+                        if (!noCheck) this.addMove(circle);
+                        if (target) break;
+                    }
+                }
+            }
+        }
+        return attackingSquares;
+    }
+
+    place = (ogX, ogY) => {
     }
 }

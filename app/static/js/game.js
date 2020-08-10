@@ -14,6 +14,7 @@ let wKingCoord;
 let bKingCoord;
 let king;
 let promotedPawn;
+let notPromoting = true;
 
 let drawGrid = () => {
     for (let x = 0; x < 8; x++) {
@@ -83,69 +84,13 @@ let enPassant = () => {
 }
 
 let generateValidMoves = (opp=false, noCheck=false) => {
-    let attackedSquares = [];
+    let attackingSquares = [];
     for (let piece of boardState.filter(piece => {
         return piece && state[0] ^ !piece.isWhite() ^ opp;
     })) {
-        for (let group of piece.moves) {
-            for (let move of group) {
-                if (piece.inBounds(move)) {
-                    let moveX = piece.x + move[0];
-                    let moveY = piece.y + move[1];
-                    let target = boardState[moveY * 8 + moveX];
-                    let circle = $(`circle[id=${moveX}${moveY}]`)[0];
-                    if (target && piece.isWhite() === target.isWhite()) break;
-                    if (piece instanceof WPawn || piece instanceof BPawn) {
-                        if (move[0]) {
-                            if (noCheck || (('' + moveX + moveY === enPassant() || target && piece.isWhite() !== target.isWhite()) && !check(piece, [moveX, moveY]))) {
-                                attackedSquares.push('' + moveX + moveY);
-                                if (!noCheck) piece.addMove(circle);
-                            }
-                        } else if (target) {
-                            break;
-                        } else if ((Math.abs(move[1]) === 1 || piece.doubleMove) && (noCheck || !check(piece, [moveX, moveY]))) {
-                            if (!noCheck) piece.addMove(circle);
-                        }
-                    } else if (!noCheck && piece instanceof WKing && Math.abs(move[0]) === 2) {
-                        let attackedSquares = boardStateCheck(true, true);
-                        if (move[0] === 2) {
-                            if (!state[1].includes('K')) break;
-                            if (!(boardState[61] === 0 && boardState[62] === 0)) break;
-                            if (!attackedSquares.some(e => {
-                                return e === '47' || e === '57' || e === '67';
-                            })) piece.addMove(circle);
-                        } else {
-                            if (!state[1].includes('Q')) break;
-                            if (!(boardState[59] === 0 && boardState[58] === 0 && boardState[57] === 0)) break;
-                            if (!attackedSquares.some(e => {
-                                return e === '47' || e === '37' || e === '27';
-                            })) piece.addMove(circle);
-                        }
-                    } else if (!noCheck && piece instanceof BKing && Math.abs(move[0]) === 2) {
-                        let attackedSquares = boardStateCheck(true, true);
-                        if (move[0] === 2) {
-                            if (!state[1].includes('q')) break;
-                            if (!(boardState[60] === 0 && boardState[61] === 0 && boardState[62] === 0)) break;
-                            if (!attackedSquares.some(e => {
-                                return e === '37' || e === '47' || e === '57';
-                            })) piece.addMove(circle);
-                        } else {
-                            if (!state[1].includes('k')) break;
-                            if (!(boardState[58] === 0 && boardState[57] === 0)) break;
-                            if (!attackedSquares.some(e => {
-                                return e === '37' || e === '27' || e === '17';
-                            })) piece.addMove(circle);
-                        }
-                    } else if (noCheck || !check(piece, [moveX, moveY])) {
-                        attackedSquares.push('' + moveX + moveY);
-                        if (!noCheck) piece.addMove(circle);
-                        if (target) break;
-                    }
-                }
-            }
-        }
+        attackingSquares = attackingSquares.concat(piece.generateMoves(noCheck));
     }
-    return attackedSquares;
+    return attackingSquares;
 }
 
 let toFEN = () => {
@@ -223,61 +168,7 @@ let deselectPiece = (piece) => {
             if (piece) piece.clearMoves();
         });
         state[2] = '-';
-        let notPromoting = true;
-        if (obj instanceof WKing) {
-            wKingCoord = [obj.x, obj.y];
-            if (obj.x - ogX ===  2) {
-                boardState[63].x = 5;
-                boardState[63].updateNode();
-                boardState[61] = boardState[63];
-                boardState[63] = 0;
-            } else if (obj.x - ogX === -2) {
-                boardState[56].x = 3;
-                boardState[56].updateNode();
-                boardState[59] = boardState[56];
-                boardState[56] = 0;
-            }
-            state[1] = state[1].replace('K', '');
-            state[1] = state[1].replace('Q', '');
-        } else if (obj instanceof BKing) {
-            bKingCoord = [obj.x, obj.y];
-            if (obj.x - ogX ===  2) {
-                boardState[63].x = 4;
-                boardState[63].updateNode();
-                boardState[60] = boardState[63];
-                boardState[63] = 0;
-            } else if (obj.x - ogX === -2) {
-                boardState[56].x = 2;
-                boardState[56].updateNode();
-                boardState[58] = boardState[56];
-                boardState[56] = 0;
-            }
-            state[1] = state[1].replace('k', '');
-            state[1] = state[1].replace('q', '');
-        } else if (obj instanceof WRook) {
-            if (ogX === 7 && ogY === 7) state[1] = state[1].replace('K', '');
-            if (ogX === 0 && ogY === 7) state[1] = state[1].replace('Q', '');
-        } else if (obj instanceof BRook) {
-            if (ogX === 7 && ogY === 7) state[1] = state[1].replace('q', '');
-            if (ogX === 0 && ogY === 7) state[1] = state[1].replace('k', '');
-        } else if (obj instanceof WPawn || obj instanceof BPawn) {
-            let enPassantTarget = enPassant();
-            if ('' + obj.x + obj.y === enPassantTarget) {
-                boardState[(obj.y + 1) * 8 + obj.x] = 0;
-                $(`image[x=${obj.x * 100}][y=${(obj.y + 1) * 100}]`).remove();
-            } else if (obj.y === 0) {
-                notPromoting = false;
-                promotedPawn = piece;
-                modal.style.display = 'inline';
-            } else if (ogY - obj.y === 2) {
-                if (flip) {
-                    state[2] = '' + (7 - obj.x) + (6 - obj.y);
-                } else{
-                    state[2] = '' + obj.x + (obj.y + 1);
-                }
-                obj.doubleMove = false;
-            }
-        }
+        obj.place(ogX, ogY);
         if (state[1] === '') state[1] = '-';
         removePrevMove();
         let checkedSquare = $('rect[fill="#ff6462"]');
@@ -435,6 +326,7 @@ let promote = function() {
     promotedPawn.remove();
     promotedPawn = undefined;
     promoteModal.style.display = 'none';
+    notPromoting = true;
     passTurn();
 }
 

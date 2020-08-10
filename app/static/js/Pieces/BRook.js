@@ -6,11 +6,16 @@ class BRook extends Piece {
         this.parallelMoves();
     }
 
+    toString = () => {
+        return 'r';
+    }
+
     isWhite = () => {
         return false;
     }
 
-    toString = () => {
-        return 'r';
+    place = (ogX, ogY) => {
+        if (ogX === 7 && ogY === 7) state[1] = state[1].replace('q', '');
+        if (ogX === 0 && ogY === 7) state[1] = state[1].replace('k', '');
     }
 }

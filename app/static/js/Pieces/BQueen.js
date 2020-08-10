@@ -7,11 +7,11 @@ class BQueen extends Piece {
         this.diagonalMoves();
     }
 
-    isWhite = () => {
-        return false;
-    }
-
     toString = () => {
         return 'q';
+    }
+
+    isWhite = () => {
+        return false;
     }
 }
