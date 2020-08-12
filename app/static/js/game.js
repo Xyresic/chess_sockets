@@ -285,8 +285,8 @@ let setup = () => {
                 socket.emit('endgame', {room: room, type: 'draw'});
             }
         }
-        pawnMoves = false;
     }
+    pawnMoves = false;
     king = state[0] ? bKingCoord : wKingCoord;
     if (boardStateCheck()) markCheck();
 }
