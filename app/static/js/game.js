@@ -141,6 +141,15 @@ let removePrevMove = () => {
     }
 }
 
+let removeCheck = () => {
+    let checkedSquare = $('rect[fill="#ff6462"]');
+    if ((checkedSquare.attr('x') / 100 + checkedSquare.attr('y') / 100) % 2) {
+        checkedSquare.attr('fill', '#f0f0f0');
+    } else {
+        checkedSquare.attr('fill', 'white');
+    }
+}
+
 let deselectPiece = (piece) => {
     selectedPiece = undefined;
     let obj = piece.obj;
@@ -171,12 +180,7 @@ let deselectPiece = (piece) => {
         obj.place(ogX, ogY);
         if (state[1] === '') state[1] = '-';
         removePrevMove();
-        let checkedSquare = $('rect[fill="#ff6462"]');
-        if ((checkedSquare.attr('x') / 100 + checkedSquare.attr('y') / 100) % 2) {
-            checkedSquare.attr('fill', '#f0f0f0');
-        } else {
-            checkedSquare.attr('fill', 'white');
-        }
+        removeCheck();
         $(`rect[x=${ogX * 100}][y=${ogY * 100}]`).attr('fill', '#add8e6');
         $(`rect[x=${obj.x * 100}][y=${obj.y * 100}]`).attr('fill', '#add8e6');
         if (notPromoting) passTurn();
@@ -335,6 +339,7 @@ let updateBoard = (user, board, move) => {
     if (user !== flip) {
         document.getElementById('moveSound').play();
         removePrevMove();
+        removeCheck();
         $(`rect[x=${(7-move[0][0]) * 100}][y=${(7-move[0][1]) * 100}]`).attr('fill', '#add8e6');
         $(`rect[x=${(7-move[1][0]) * 100}][y=${(7-move[1][1]) * 100}]`).attr('fill', '#add8e6');
         state = board;
